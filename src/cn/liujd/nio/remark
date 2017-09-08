@@ -1,0 +1,43 @@
+NIO编程
+	JDK1.4中的java.nio.*包中引入新的javaI/O库 其目的是提高速度 实际上 “旧的”I/O包已经使用
+NIO重新实现过  即使我们不显示的使用NIO编程 也能从中受益  速度的提高在文件I/O和网络I/O都可能会发生
+
+简介
+	NIO我们一般认为是New I/O(也是官方的叫法) 因为它是相对于老的I/O类库新增的(其实在JDk1.4
+就已经被引入了 但是这个名词还会继续使用很久 即使他们在现在看起来已经是"旧的" 所以也提示我们在命名时 需要
+好好考虑) 做了很大的改变 但是民间很多人称之为Non-block I/O 即非阻塞I/O 因为这样叫 更能体现它的
+特点  而下文中的NIO 不是指整个新的I/O库 而是非阻塞I/O
+	NIO提供了于传统BIO模型中的Socket 和  ServerSocket 相对应的SocketChannel 和 
+ServerSocketChannel两种不同的套接字通道实现
+	新增的两种通道都支持 阻塞 和 非阻塞两种模式
+	阻塞模式使用就像传统中的支持一样  比较简单 但是性能和可靠性都不好  非阻塞模式正好与之相反
+	对于低负载 低并发的应用程序 可以使用同步阻塞I/O来提升开发效率 和 更好的维护性 对于高负载 高并发的
+(网络)应用 应该使用NIO的非阻塞模式来开发
+
+缓冲区	Buffer
+	Buffer是一个对象  包含一些要写入或者读出的数据
+	在NIO库中 所有数据都是用缓冲区处理的  在读取数据时  它是直接读到缓冲区的  在写入数据时 也是写入到
+缓冲区 任何时候访问NIO中的数据  都是通过缓冲区进行操作
+	缓冲区实际上是一个数组 并提供了对数据结构化访问以及维护读写位置等信息	
+	具体的缓冲区有这些 ByteBuffer CharBuffer ShortBuffer IntBuffer LongBuffer
+FloatBuffer DoubleBuffer等等  他们实现了相同的接口：Buffer
+
+通道		Channel
+	我们对数据的读取和写入要通过Channel 他就像水管一样  是一个通道 通道不同于流的地方就在于  通道是
+双向的 可以用于读 写 和 同时 读写操作
+	底层操作系统的通道一般是全双工的 所以全双工的Channel比流能更好的映射底层操作系统API
+	
+Channel主要分两大类
+	SelectableChannel:用户网络读写
+	FileChannel:用户文件操作
+	
+	ServerSocketChannel和SocketChannel都是selectableChannel的子类
+	
+多路复用器  Selector
+	Selector是java NIO编程的基础
+	Selector提供选择已经就绪的任务的能力  Selector会不断轮询注册在其上面的Channel 如果某个Channel
+上面发生读或者写事件  这个Channel就处于就绪状态  会被Selector轮询出来 然后通过SelectionKey可以获取
+就绪Channel的集合 进行后续的I/O操作
+	一个Selector可以同时轮询多个Channel  因为JDK使用了epoll()代替传统的select实现 所以
+没有最大连接句柄1024/2048的限制 所以 只需要一个线程负责Selector的轮询 就可以接入成千上万的客户端
+	
